@@ -2,6 +2,9 @@
 #include <cudia_runtime.h>
 #include <stdio.h>
 
+// 线程束分支会降低GPU实际的计算能力
+// 线程束分支对程序性能影响通过分支效率衡量
+
 // 设置内核函数
 __global__ void sumMatrixOnGPU2D(int *arrayA, int* arrayB, int *arrayC, const int nx, const int ny)
 {
@@ -9,7 +12,7 @@ __global__ void sumMatrixOnGPU2D(int *arrayA, int* arrayB, int *arrayC, const in
   int iy = threadIdx.y + blockIdx.y * blockDim.y;
 
   unsigned int idx = iy * nx + ix;
-  if (ix < nx && iy < ny) {
+  if (ix < nx && iy < ny) { // 当数据不是线程块整数倍时 会溢出 所以判断下下标是否正确
     arrayC[idx] = arrayA[idx] + arrayB[idx];
   }
 }

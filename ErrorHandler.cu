@@ -9,9 +9,9 @@ int main(int argc, char **argv)
 {
   float* gpuMemory = NULL;
   // 出错 则__FILE__, __LINE__ 就会有错误的信息值
-  ErrorCheck(cudaMalloc(&gpuMemory, sizeof(float)), __FILE__, __LINE__);
-  ErrorCheck(cudaFree(gpuMemory), __FILE__, __LINE__);
-  ErrorCheck(cudaFree(gpuMemory), __FILE__, __LINE__);
-  ErrorCheck(cudaDeviceReset(), __FILE__, __LINE__);
+  ErrorCheck(cudaMalloc(&gpuMemory, sizeof(float)));
+  ErrorCheck(cudaFree(gpuMemory));
+  ErrorCheck(cudaFree(gpuMemory));
+  ErrorCheck(cudaDeviceReset());
   return 0;
 }

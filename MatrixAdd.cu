@@ -34,7 +34,7 @@ __global__ void sumArraysOnGPU(float *A, float* B, float *C, const int N) {
 int main(int argc, char **argv) {
   int nDeviceNumber = 0;
   // 检测当前设备与cuda兼容的设备
-  cudaError_t error = ErrorCheck(cudaGetDeviceCount(&nDeviceNumber), __FILE__, __LINE__);
+  cudaError_t error = ErrorCheck(cudaGetDeviceCount(&nDeviceNumber));
   if (error != cudaSuccess || nDeviceNumber == 0) {
     printf("NO CUDA camptable GPU found\n");
     return 0;
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   int dev = 0;
   // 设置GPU设备
-  error = ErrorCheck(cudaSetDevice(dev), __FILE__, __LINE__);
+  error = ErrorCheck(cudaSetDevice(dev));
   if (error != cudaSuccess) {
     printf("fail set GPU for computing\n");
     return 0;

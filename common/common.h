@@ -2,12 +2,12 @@
 #include <cuda_runtime.h>
 #include <stdio.h>
 
-cudaError_t ErrorCheck(cudaError_t status, const char *filename, int lineNumber)
+cudaError_t ErrorCheck(cudaError_t status)
 {
   if (status != cudaSuccess)
   {
     printf("CUDA API error:\r\n code=%d, name=%s, description=%s\r\n
-    file=%s, line=%d\r\n", status, cudaGetErrorName(status), cudaGetErrorString(status), filename, lineNumber);
+    file=%s, line=%d\r\n", status, cudaGetErrorName(status), cudaGetErrorString(status), __FILE__, __LINE__);
   }
   return status;
 }

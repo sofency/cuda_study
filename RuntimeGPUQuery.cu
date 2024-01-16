@@ -43,4 +43,18 @@ int main(int argc, char **argv)
 
   
 
+  printf("Device name: %s\n", deviceProp.name);
+  printf("Compute capaability: %d.%d\n", deviceProp.major, deviceProp.minor);
+  printf("Amount of global memory: %g GB\n", deviceProp.totalGlobalMem / (1024.0 * 1024 * 1024));
+  printf("Amount of constant memory:  %g KB\n", deviceProp.totalConstMem / 1024.0);
+  printf("Maximum grid size: %d %d %d\n", deviceProp.maxGridSize[0], deviceProp.maxGridSize[1], deviceProp.maxGridSize[2]);
+  printf("Maximum block size: %d %d %d\n", deviceProp.maxThreadsDim[0], deviceProp.maxThreadsDim[1], deviceProp.maxThreadsDim[2]);
+  printf("Number of SMs: %d\n", deviceProp.multiprocessorCount);
+  printf("Maxmium amount of shared memory per block: %g KB\n", deviceProp.sharedMemPerBlock / 1024.0);
+  printf("Maxmium amount of shared memory per SM: %g KB\n", deviceProp.sharedMemPerMultiprocessor / 1024.0);
+  printf("Maxmium number of registers per block: %d K\n", deviceProp.regsPerBlock / 1024);
+  printf("Maxmium number of registers per SM: %d K\n", deviceProp.regsPerMultiprocessor / 1024);
+  printf("Maxmium number of threads per block: %d K\n", deviceProp.maxThreadsPerBlock);
+  printf("Maxmium number of threads per SM: %d\n", deviceProp.maxThreaadsPerMultiProcessor);
+  return 0;
 }

@@ -24,6 +24,13 @@ __global__ void helloWorldGPU()
 
 // nvcc HelloWorld.cu --output-file HelloWorld
 // ./HelloWorld
+__device__ float factor = 10.0;
+__global__ void allocateMemory(float*d_A)
+{
+  printf("给d_A赋值 %f\n", factor);
+  *d_A = factor;
+}
+
 int main(int argc, char **argv) 
 {
   printf("Hello World from CPU\n");
@@ -37,6 +44,20 @@ int main(int argc, char **argv)
   block.x = 2;
   block.y = 2;
   helloWorldGPU<<<grid, block>>>();
+  cudaDeviceSynchronize();
+
+  float*d_A;
+  cudaMalloc((void**)&d_A, sizeof(float));
+  allocateMemory<<<1,1>>>(d_A);
+  cudaDeviceSynchronize();
+
+
+  float*h_A;
+  // cudaMemcpy(&h_A, d_A, sizeof(float), cudaMemcpyDeviceToHost);
+  ErrorCheck(cudaMemcpyFromSymbol(h_A, d_A, sizeof(float))); //使用上面 或者这个
+
+  printf("copy from GPU value %f\n", h_A);
+
   cudaDeviceReset();
   return 0;
 }
