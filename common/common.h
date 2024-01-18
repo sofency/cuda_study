@@ -8,6 +8,9 @@ cudaError_t ErrorCheck(cudaError_t status)
   {
     printf("CUDA API error:\r\n code=%d, name=%s, description=%s\r\n
     file=%s, line=%d\r\n", status, cudaGetErrorName(status), cudaGetErrorString(status), __FILE__, __LINE__);
+    // 直接退出
+    exit(1);
+    return;
   }
   return status;
 }

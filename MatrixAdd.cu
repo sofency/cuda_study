@@ -34,21 +34,19 @@ __global__ void sumArraysOnGPU(float *A, float* B, float *C, const int N) {
 int main(int argc, char **argv) {
   int nDeviceNumber = 0;
   // 检测当前设备与cuda兼容的设备
-  cudaError_t error = ErrorCheck(cudaGetDeviceCount(&nDeviceNumber));
-  if (error != cudaSuccess || nDeviceNumber == 0) {
-    printf("NO CUDA camptable GPU found\n");
-    return 0;
-  }
+  ErrorCheck(cudaGetDeviceCount(&nDeviceNumber));
   // set up device
-
   int dev = 0;
   // 设置GPU设备
-  error = ErrorCheck(cudaSetDevice(dev));
-  if (error != cudaSuccess) {
-    printf("fail set GPU for computing\n");
-    return 0;
-  } else {
-    printf("set GPU 0 for computing\n");
+  ErrorCheck(cudaSetDevice(dev));
+
+  // 检查是否支持全局内存 nvcc -Xptxas -dlcm=cg MatrixAdd.cu -o MatrixAdd 
+  // -dlcm=cg 是另一个参数，它用来设置内存一致性模型。
+  // 它可以用来设置PTX汇编级别的优化选项
+  cudaDeviceProp deviceProp;
+  cudaGetDeviceProperties(&deviceProp, dev);
+  if (deviceProp.globalL1CacheSupported) {
+    printf("Global L1 Cache is supported\n");
   }
 
   // 向左移动14位

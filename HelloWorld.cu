@@ -6,6 +6,7 @@
 // 线程标识是三维向量，通过下标x,y,z访问
 // 共享内存 
 // 内核函数中由 __shared__修饰的变量都保存在共享内存中，共享是片上存储空间，具有低延迟和高带宽特点
+// 共享内存分为局部和全局 局部共享内存 只能被当前核函数执行
 // 常量内存 由__constant__修饰的变量存放在常量内存中，常量内存可以被所有内核代码访问 
 
 
@@ -48,13 +49,23 @@ int main(int argc, char **argv)
 
   float*d_A;
   cudaMalloc((void**)&d_A, sizeof(float));
+  cudaPointerAttributes pt_attribute;
+  // 查看指定指针相关的指针属性
+  ErrorCheck(cudaPointerGetAttributes(&pt_attribute, d_A));
+  printf("ppinter attribute: device=%d, devicePointer:%p, type=%d\n", 
+          pt_attribute.device, pt_attribute.devicePointer, pt_attribute.type);
+
   allocateMemory<<<1,1>>>(d_A);
   cudaDeviceSynchronize();
 
 
   float*h_A;
   // cudaMemcpy(&h_A, d_A, sizeof(float), cudaMemcpyDeviceToHost);
+  // 这可以直接讲GPU的数据拷贝到CPU中
   ErrorCheck(cudaMemcpyFromSymbol(h_A, d_A, sizeof(float))); //使用上面 或者这个
+
+  // cudaGetSymbolAddress((void**)&pd_A, factor) 这种是将GPU上的factor的地址拷贝给 pd_A
+  // cudaMemcpy(&h_A, pd_A, sizeof(floaat), cudaMemcpyDeviceToHost)
 
   printf("copy from GPU value %f\n", h_A);
 
