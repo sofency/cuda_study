@@ -97,3 +97,20 @@ shuffle指令分为两类: 用于整型数据，用于浮点型数据
 
 lane代表线程束中的一个线程
 lane的索引范围为0～31
+
+
+
+### 显示和隐式同步
+
+隐式同步: 会阻止主机线程往下执行，直到这些接口返回
+  主机页锁定内存分配
+  设备内存分配
+  设备内存初始化
+  在设备上拷贝数据
+  修改一级缓存和共享内存配置
+
+显示同步: 必须自己使用同步函数
+  设备同步: cudaDeviceSynchronize()
+  流同步: cudaStreamSynchronize()
+  事件同步: cudaEventSynchronize()
+  不同流同步: cudaStreamWaitEvent()

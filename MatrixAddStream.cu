@@ -5,6 +5,10 @@
 /**
  * @brief nvprof --help
  * sudo  /path/nvprof ./code 就可以看到程序运行时的信息
+ * 流事件的作用：同步流的执行 监控设备执行进度
+ * CUDA流事件用于检测流的执行知否到达指定的操作点
+ * 流事件插入流后，当其关联的操作完成后，流事件会在主机线程中产生一个完成标志
+ * 主机线程同步 cudaEventSynchroize()
  * @param ip 
  * @param size 
  */
@@ -49,8 +53,8 @@ int main(int argc, char **argv) {
     printf("Global L1 Cache is supported\n");
   }
 
-  // 向左移动14位
-  int nElem = 1 << 14;
+  // 向左移动24位
+  int nElem = 1 << 24;
   
   size_t bytes = nElem * sizeof(float);
   float *h_A, *h_B, *gpuRef;
@@ -82,22 +86,50 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  // 获取设备优先级
+  int lowPriority = 0;
+  int highPriority = 0;
+  cudaDeviceGetStreamPriorityRange(&lowPriority, &highPriority);
+  printf("Priority Range is from %d to %d \n", lowPriority, highPriority);
 
-  // 将主机数据拷贝到GPU
-  cudaMemcpy(d_A, h_A, bytes, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_B, h_B, bytes, cudaMemcpyHostToDevice);
+
+
+  // 流化处理
+  cudaStream_t data_stream;
+  cudaStreamCreate(&data_stream);
+  // 将主机数据通过流式拷贝到GPU 异步进行数据拷贝
+  cudaMemcpyAsync(d_A, h_A, bytes, cudaMemcpyHostToDevice, data_stream);
+  cudaMemcpyAsync(d_B, h_B, bytes, cudaMemcpyHostToDevice, data_stream);
+  
+  // TODO 只是创建事件
+  cudaEvent_t cp_evt;
+  ErrorCheck(cudaEventCreate(&cp_evt));
+  ErrorCheck(cudaEventRecord(cp_evt, data_stream));
+  cudaEventSynchroize(cp_evt); // 等待数据拷贝完成
+
+  // cudaStreamSynchronize(data_stream);
   
 
-  dim3 block(32);
-  dim3 grid(nElem/32);
+  dim3 block(512);
+  dim3 grid((nElem - 1) / block.x + 1, 1);
 
   printf("Execution condigure <<%d,%d>>>. total element:%d\n", grid.x, block.x, nElem);
 
   double begin = GetCPUSecond();
   
+  // 这样流失执行
+  cudaStream_t kernel_stream;
+  // 设置优先级
+  cudaStreamCreateWithPriority(&kernel_stream, cudaStreamDefault, highPriority);
+  sumArraysOnGPU<<<grid, block, 0, kernel_stream>>>(d_A, d_B, d_C, nElem);
 
-  sumArraysOnGPU<<<grid, block>>>(d_A, d_B, d_C, nElem);
-  cudaDeviceSynchronize();
+  cudaEvent_t cp_end_evt;
+  ErrorCheck(cudaEventCreate(&cp_end_evt));
+  ErrorCheck(cudaEventRecord(cp_end_evt, kernel_stream));
+  cudaEventSynchroize(cp_end_evt); // 等待数据拷贝完成
+  printf("sum execute succcess\n");
+
+  // cudaDeviceSynchronize(); 或者上面事件监督
   double end = GetCPUSecond();
 
   cudaMemcpy(gpuRef, d_C, bytes, cudaMemcpyDeviceToHost);
@@ -113,6 +145,11 @@ int main(int argc, char **argv) {
   cudaFree(d_A);
   cudaFree(d_B);
   cudaFree(d_C);
+  cudaStreamDestory(data_stream);
+  cudaStreamDestory(kernel_stream);
+
+  cudaEventDestory(cp_evt);
+  cudaEventDestory(cp_end_evt);
   cudaDeviceReset();
 
   return 0;

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "common/common.h"
 
+// 32位比特位全部都是1， 每个比特位代表一个线程 全为1　表示所有线程都执行
+const unsigned FULL_MASK = 0xffffffff;
 
 __global__ void shuffle_broadcast(int *in, int* out, int srcLane)
 {
@@ -10,7 +12,7 @@ __global__ void shuffle_broadcast(int *in, int* out, int srcLane)
   // T __shfl_sync(unsigned mask, T var, int srcLane, int width=warpSize);
 
   // 将value(参数)从其他线程传递出来 给value(左边)赋值
-  value = __shfl(value, srcLane, 32);
+  value = __shfl_sync(FULL_MASK, value, srcLane, 32);
   out[threadIdx.x] = value;
 }
 
@@ -26,10 +28,9 @@ __global__ void shuffle_broadcast(int *in, int* out, int srcLane)
 __global__ void shuffle_up_demo(int *in, int* out, int srcLane)
 {
   int value = in[threadIdx.x];
-  value = __shfl_up(value, srcLane);
-  // value = __shfl_down(value, srcLane); 3 4 5 ... 29 30 31 29 30 31
-  // value = __shfl_xor(value, srcLane, 32); 0 1 2 3 进行异或处理 1 0 3 2 
-
+  value = __shfl_up_sync(FULL_MASK, value, srcLane); // w最后一个参数 默认为32
+  // value = __shfl_down_sync(FULL_MASK, value, srcLane); 3 4 5 ... 29 30 31 29 30 31
+  // value = __shfl_xor_sync(FULL_MASK, value, srcLane, 32); 0 1 2 3 进行异或处理 1 0 3 2 
   out[threadIdx.x] = value;
 }
 

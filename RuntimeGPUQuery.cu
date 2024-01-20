@@ -33,6 +33,13 @@ int main(int argc, char **argv)
   // 查看当前cuda的属性
   cudaDeviceProp deviceProp;
   cudaGetDeviceProperties(&deviceProp, dev);
+  // 
+  if (deviceProp.concurrentKernels) {
+    printf("concurrent kernel is supported on this GPU, begin to execute kernel\n");
+  } else {
+    printf("concurrent kernel not supported on this GPU\n");
+  }
+
   printf("Device %d: \"%s\" \n", dev, deviceProp.name);
 
   cudaDriverGetVersion(&driverVersion);

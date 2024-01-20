@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   ErrorCheck(cudaMemcpyFromSymbol(h_A, d_A, sizeof(float))); //使用上面 或者这个
 
   // cudaGetSymbolAddress((void**)&pd_A, factor) 这种是将GPU上的factor的地址拷贝给 pd_A
-  // cudaMemcpy(&h_A, pd_A, sizeof(floaat), cudaMemcpyDeviceToHost)
+  // cudaMemcpy(&h_A, pd_A, sizeof(float), cudaMemcpyDeviceToHost)
 
   printf("copy from GPU value %f\n", h_A);
 
