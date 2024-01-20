@@ -114,3 +114,7 @@ lane的索引范围为0～31
   流同步: cudaStreamSynchronize()
   事件同步: cudaEventSynchronize()
   不同流同步: cudaStreamWaitEvent()
+
+### 原子操作
+cuda 只为全局内存和共享内存提供了原子操作，算术元算函数，为运算函数，交换函数
+atomicAdd / Sub / Exch / Min / Max / Inc / Dec / CAS / And / Or / Xor
