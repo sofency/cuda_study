@@ -118,3 +118,81 @@ lane的索引范围为0～31
 ### 原子操作
 cuda 只为全局内存和共享内存提供了原子操作，算术元算函数，为运算函数，交换函数
 atomicAdd / Sub / Exch / Min / Max / Inc / Dec / CAS / And / Or / Xor
+
+### cuda-gdb 调试
+nvcc -g -G file.cu -o file
+cuda-gdb ./file
+help cuda 查看命令
+
+
+b 22 断点设置在22行
+b initialData 符号断点
+b file.cu:22 断点 代码行断点
+
+内核入口断点
+set cuda bread_on_launch [type]
+type 可以是 none / application (由应用程序发起的) / system / all 
+
+
+r  运行到断点处
+cuda kernel block thread 软件坐标
+cuda kernel grid thread 
+cuda device sm wrap lane 硬件坐标
+cuda thread 3 转换到3线程
+cuda thread 可以查看当前是哪个线程
+
+中断 CTRL + C 中断死循环和死锁
+单步执行 n
+查看变量id  p id 
+
+
+条件断点
+bread martixadd.cu:22 if threadIdx.x == 5
+
+or
+
+break 22 先设置断点
+cond 1 threadIdx.x == 5  // cond 1 是断点的序号
+
+B是一维数组
+print B[0]@3 b数组前3元素
+
+
+nvcc -g -G -arch=sm_35 -rdc=true file.cu -o file
+
+device 1  查询第一个设备信息 类比 sm wrap lane grid 
+kernel 1 查询第一个kernel
+查询所有断点 breakpoint all 
+
+info cuda contexts 
+info cuda blocks
+
+查看寄存器中的值
+$R<regnum>  <regnum>是寄存器的编号 $R10
+寄存器内容查看 info registers [$R<regnum>]
+
+p $i 查看当前变量存储位置 可能会显示寄存器地址
+然后再查看寄存器 中的值
+p $R0可以查看
+
+info registers system 预测和状态寄存器
+
+### 事件通知
+上下文事件 cuda上下文在创建、入栈、出栈
+内核事件
+
+set cuda context_events on 开启上下文事件
+
+
+cuda-memcheck工具可用于检测CUDA程序中各种内存访问错误问题
+
+// 进行编译 检测内存错误
+nvcc -g -G -lineinfo -Xcompiler -rdynamic debuf-segfault.cu -o debug-segfault
+cuda-memcheck ./debug-segfault
+
+自动错误检测
+nvcc -g -G detect.cu -o detect
+cuda-gdb ./detect
+
+set cuda api_failures ignore 
+r 运行程序
